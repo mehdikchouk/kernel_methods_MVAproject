@@ -8,8 +8,12 @@ def linear_kernel(x1, x2):
 def polynomial_kernel(x, y, p=3):
     return (1 + np.dot(x, y)) ** p
 
-def gaussian_kernel(x, y, sigma=2.0):
+def gaussian_kernel(x, y, sigma=1):
     return np.exp(-linalg.norm(x-y)**2 / (2 * (sigma ** 2)))
+
+def histogram_intersection_kernel(x,y):
+    temp=np.vstack((x,y))
+    return np.sum(np.amin(temp,axis=0))
 
 
 def one_vs_all(X,y,kernel,C):
@@ -38,7 +42,7 @@ def one_vs_all(X,y,kernel,C):
 
 def predict_multiclass(X,number_of_classes,parameters):
     #matrix containing the results of each classifier for each example
-    decision_function=np.absolute(np.zeros((X.shape[0],number_of_classes)))
+    decision_function=np.zeros((X.shape[0],number_of_classes))
 
     for i in range(number_of_classes):
         if parameters[i]['w'] is not None:
@@ -50,7 +54,8 @@ def predict_multiclass(X,number_of_classes,parameters):
                 for a, sv_y, sv in zip(parameters[i]['a'],parameters[i]['sv_y'],parameters[i]['sv']):
                     s += a * sv_y * parameters[i]['kernel'](X[j], sv)
                 y_predict[j] = s
-            decision_function[:,i] = np.absolute(y_predict + parameters[i]['b'])
+            decision_function[:,i] = y_predict + parameters[i]['b']
 
+    print decision_function
     y_hat=np.argmax(decision_function,axis=1)
     return y_hat
